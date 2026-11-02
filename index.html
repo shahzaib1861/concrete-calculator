@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Concrete Calculator: Slab, Round Pad and Column (Cubic Yards and Bags)</title>
+<meta name="description" content="Free concrete calculator for slabs, round pads and columns. Get volume, cubic yards or cubic metres, and how many 40, 60 or 80 lb bags you need, with a waste allowance.">
+<link rel="canonical" href="https://shahzaib1861.github.io/concrete-calculator/">
+<style>
+:root{--bg:#fff;--fg:#1f2933;--mut:#52606d;--line:#e4e7eb;--acc:#1d4ed8;--card:#f8fafc}
+@media(prefers-color-scheme:dark){:root{--bg:#14181d;--fg:#e4e7eb;--mut:#9aa5b1;--line:#323a42;--acc:#93c5fd;--card:#1b2127}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 56px}
+h1{font-size:28px;line-height:1.2;margin:0 0 8px}h2{font-size:21px;margin:32px 0 8px}
+a{color:var(--acc)}.lead{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:18px 0}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mut);gap:3px}
+input,select{padding:8px;border:1px solid var(--line);border-radius:6px;font-size:16px;background:var(--bg);color:var(--fg)}
+table{width:100%;border-collapse:collapse;margin-top:12px}th{text-align:left;font-weight:500;color:var(--mut)}td{text-align:right;font-weight:600}
+th,td{padding:7px 0;border-top:1px solid var(--line)}.big td{font-size:18px}
+#err{color:#b42318;min-height:1.2em;font-size:14px}
+code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:14px}
+footer{margin-top:40px;font-size:14px;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<h1>Free Concrete Calculator</h1>
+<p class="lead">Work out how much concrete a slab, round pad or column needs: volume, cubic yards (or cubic metres) to order, and the number of bags. Runs in your browser, nothing is sent anywhere.</p>
+
+<section class="card" aria-label="Calculator">
+<div class="grid">
+<label>Units<select id="unit"><option value="imperial">Feet &amp; inches</option><option value="metric">Metric</option></select></label>
+<label>Shape<select id="shape"><option value="slab">Rectangular slab</option><option value="circle">Round pad</option><option value="column">Round column</option></select></label>
+</div>
+<div class="grid" style="margin-top:10px">
+<label id="l0"><span></span><input id="d0" type="number" min="0" step="any" inputmode="decimal"></label>
+<label id="l1"><span></span><input id="d1" type="number" min="0" step="any" inputmode="decimal"></label>
+<label id="l2"><span></span><input id="d2" type="number" min="0" step="any" inputmode="decimal"></label>
+</div>
+<div class="grid" style="margin-top:10px">
+<label>Number of pours<input id="qty" type="number" min="1" step="1" value="1"></label>
+<label>Waste allowance (%)<input id="waste" type="number" min="0" max="100" step="any" value="10"></label>
+<label>Bag size<select id="bag"></select></label>
+<label><span id="yl">Yield per bag</span><input id="yield" type="number" min="0" step="any"></label>
+<label>Price per bag (optional)<input id="bp" type="number" min="0" step="any"></label>
+<label><span id="rl">Ready-mix price</span><input id="rp" type="number" min="0" step="any"></label>
+</div>
+<div id="err" role="alert"></div>
+<table aria-live="polite">
+<tr><th>Volume</th><td id="rVol">-</td></tr>
+<tr><th>With waste</th><td id="rWaste">-</td></tr>
+<tr class="big"><th id="rOL">Ready-mix to order</th><td id="rOrder">-</td></tr>
+<tr class="big"><th>Bags needed</th><td id="rBags">-</td></tr>
+<tr><th>Bag cost</th><td id="rBC">-</td></tr>
+<tr><th>Ready-mix cost</th><td id="rRC">-</td></tr>
+</table>
+<p class="lead" style="font-size:14px;margin-bottom:0">Estimate only. Check the yield printed on your bag and confirm quantities with your supplier.</p>
+</section>
+
+<h2>How the calculation works</h2>
+<p>The calculator finds the volume of one pour, adds your waste allowance, converts it to the unit you order in, and divides by the yield of one bag.</p>
+<ul>
+<li><strong>Slab:</strong> length &times; width &times; thickness.</li>
+<li><strong>Round pad:</strong> &pi; &times; (diameter &divide; 2)&sup2; &times; thickness.</li>
+<li><strong>Round column:</strong> &pi; &times; (diameter &divide; 2)&sup2; &times; height.</li>
+<li><strong>Cubic yards:</strong> cubic feet &divide; 27.</li>
+<li><strong>Bags:</strong> volume with waste &divide; yield per bag, rounded up to a whole bag.</li>
+</ul>
+<h2>Worked example</h2>
+<p>A 10 ft &times; 10 ft slab, 4 in thick, is 10 &times; 10 &times; (4 &divide; 12) = 33.33 cubic feet. With a 10% allowance that is 36.67 cubic feet, or 1.36 cubic yards. A typical 80 lb bag yields about 0.6 cubic feet, so you need 62 bags.</p>
+<h2>Typical bag yields</h2>
+<p>Yields vary by brand, so use the figure on your bag. Approximate values used as defaults: 40 lb about 0.30 cu ft, 60 lb about 0.45 cu ft, 80 lb about 0.60 cu ft; 20 kg about 0.0094 m&sup3;, 25 kg about 0.0117 m&sup3;, 40 kg about 0.0187 m&sup3;.</p>
+<h2>Why add a waste allowance?</h2>
+<p>Uneven ground, spillage and slightly over-thick forms all use more concrete than the drawing says. Ten percent is a common starting point; use more for rough or uneven sub-bases.</p>
+<h2>Chrome extension and more tools</h2>
+<p>The same calculator is available as a free Chrome extension that works offline (listing pending store review). You can find more free business and planning tools at <a href="https://saasnm.com/solutions/">saasnm.com</a>.</p>
+<footer>Source code for this page and the extension logic is in <a href="https://github.com/shahzaib1861/concrete-calculator">the GitHub repository</a>.</footer>
+</main>
+<script>
+/*
+ * Concrete Calculator: calculation logic.
+ * Pure functions, no DOM access, so it can be unit tested in Node.
+ *
+ * Imperial inputs: slab = length (ft), width (ft), thickness (in)
+ *                  circle = diameter (ft), thickness (in)
+ *                  column = diameter (in), height (ft)
+ * Metric inputs:   slab = length (m), width (m), thickness (cm)
+ *                  circle = diameter (m), thickness (cm)
+ *                  column = diameter (cm), height (m)
+ *
+ * Base volume is cubic feet (imperial) or cubic metres (metric).
+ */
+const ConcreteCalc = (function () {
+  'use strict';
+
+  const FT3_PER_YD3 = 27;
+
+  // Approximate yield per bag of ready-mixed concrete. Products vary, so the
+  // UI lets the user override these values with the figure on their bag.
+  const BAG_OPTIONS = {
+    imperial: [
+      { id: '40', label: '40 lb bag', yield: 0.30 }, // cubic feet
+      { id: '60', label: '60 lb bag', yield: 0.45 },
+      { id: '80', label: '80 lb bag', yield: 0.60 }
+    ],
+    metric: [
+      { id: '20', label: '20 kg bag', yield: 0.0094 }, // cubic metres
+      { id: '25', label: '25 kg bag', yield: 0.0117 },
+      { id: '40', label: '40 kg bag', yield: 0.0187 }
+    ]
+  };
+
+  const SHAPES = ['slab', 'circle', 'column'];
+
+  function isPositive(n) {
+    return typeof n === 'number' && isFinite(n) && n > 0;
+  }
+
+  function isNonNegative(n) {
+    return typeof n === 'number' && isFinite(n) && n >= 0;
+  }
+
+  // Volume of one pour in cubic feet (imperial) or cubic metres (metric).
+  function baseVolume(unit, shape, a, b, c) {
+    const imperial = unit === 'imperial';
+    if (shape === 'slab') {
+      // a = length, b = width, c = thickness
+      const thickness = imperial ? c / 12 : c / 100;
+      return a * b * thickness;
+    }
+    if (shape === 'circle') {
+      // a = diameter, b = thickness
+      const thickness = imperial ? b / 12 : b / 100;
+      const radius = a / 2;
+      return Math.PI * radius * radius * thickness;
+    }
+    // column: a = diameter, b = height
+    const diameter = imperial ? a / 12 : a / 100;
+    const radius = diameter / 2;
+    return Math.PI * radius * radius * b;
+  }
+
+  function requiredDimensions(shape) {
+    return shape === 'slab' ? 3 : 2;
+  }
+
+  /*
+   * opts: {
+   *   unit: 'imperial' | 'metric',
+   *   shape: 'slab' | 'circle' | 'column',
+   *   dims: [a, b, c],
+   *   quantity: number of identical pours (default 1),
+   *   wastePct: extra allowance in percent (default 10),
+   *   bagYield: volume per bag in cubic feet / cubic metres,
+   *   bagPrice: optional price per bag,
+   *   readyMixPrice: optional price per cubic yard / cubic metre
+   * }
+   */
+  function compute(opts) {
+    const unit = opts && opts.unit;
+    const shape = opts && opts.shape;
+    if (unit !== 'imperial' && unit !== 'metric') {
+      return { valid: false, error: 'Choose a unit system.' };
+    }
+    if (SHAPES.indexOf(shape) === -1) {
+      return { valid: false, error: 'Choose a shape.' };
+    }
+
+    const dims = (opts.dims || []).slice(0, requiredDimensions(shape));
+    if (dims.length < requiredDimensions(shape) || !dims.every(isPositive)) {
+      return { valid: false, error: 'Enter every size as a number greater than zero.' };
+    }
+
+    const quantity = opts.quantity === undefined ? 1 : opts.quantity;
+    if (!isPositive(quantity) || Math.floor(quantity) !== quantity) {
+      return { valid: false, error: 'Quantity must be a whole number of 1 or more.' };
+    }
+
+    const wastePct = opts.wastePct === undefined ? 10 : opts.wastePct;
+    if (!isNonNegative(wastePct) || wastePct > 100) {
+      return { valid: false, error: 'Waste allowance must be between 0 and 100 percent.' };
+    }
+
+    if (!isPositive(opts.bagYield)) {
+      return { valid: false, error: 'Enter the yield per bag as a number greater than zero.' };
+    }
+
+    const d = dims;
+    const volume = baseVolume(unit, shape, d[0], d[1], d[2]) * quantity;
+    const volumeWithWaste = volume * (1 + wastePct / 100);
+
+    const imperial = unit === 'imperial';
+    const orderUnits = imperial ? volume / FT3_PER_YD3 : volume; // yd3 or m3
+    const orderUnitsWithWaste = imperial ? volumeWithWaste / FT3_PER_YD3 : volumeWithWaste;
+
+    // Small epsilon prevents a value like 61.0000000001 turning into 62 bags.
+    const bags = Math.ceil(volumeWithWaste / opts.bagYield - 1e-9);
+
+    let bagCost = null;
+    if (opts.bagPrice !== undefined && opts.bagPrice !== null && opts.bagPrice !== '') {
+      if (!isNonNegative(opts.bagPrice)) {
+        return { valid: false, error: 'Price per bag must be a number of zero or more.' };
+      }
+      bagCost = bags * opts.bagPrice;
+    }
+
+    let readyMixCost = null;
+    if (opts.readyMixPrice !== undefined && opts.readyMixPrice !== null && opts.readyMixPrice !== '') {
+      if (!isNonNegative(opts.readyMixPrice)) {
+        return { valid: false, error: 'Ready-mix price must be a number of zero or more.' };
+      }
+      readyMixCost = orderUnitsWithWaste * opts.readyMixPrice;
+    }
+
+    return {
+      valid: true,
+      unit: unit,
+      volume: volume,
+      volumeWithWaste: volumeWithWaste,
+      orderUnits: orderUnits,
+      orderUnitsWithWaste: orderUnitsWithWaste,
+      bags: bags,
+      bagCost: bagCost,
+      readyMixCost: readyMixCost
+    };
+  }
+
+  function round(n, places) {
+    const f = Math.pow(10, places);
+    return Math.round((n + Number.EPSILON) * f) / f;
+  }
+
+  return {
+    compute: compute,
+    round: round,
+    BAG_OPTIONS: BAG_OPTIONS,
+    SHAPES: SHAPES,
+    FT3_PER_YD3: FT3_PER_YD3
+  };
+})();
+
+
+(function(){
+var $=function(i){return document.getElementById(i)};
+var L={imperial:{slab:['Length (ft)','Width (ft)','Thickness (in)'],circle:['Diameter (ft)','Thickness (in)'],column:['Diameter (in)','Height (ft)']},
+metric:{slab:['Length (m)','Width (m)','Thickness (cm)'],circle:['Diameter (m)','Thickness (cm)'],column:['Diameter (cm)','Height (m)']}};
+function setYield(){var u=$('unit').value,id=$('bag').value;var o=ConcreteCalc.BAG_OPTIONS[u].filter(function(b){return b.id===id})[0];$('yield').value=o?o.yield:''}
+function bags(){var u=$('unit').value,s=$('bag');s.innerHTML='';var a=ConcreteCalc.BAG_OPTIONS[u];a.forEach(function(b){var o=document.createElement('option');o.value=b.id;o.textContent=b.label;s.appendChild(o)});s.value=a[a.length-1].id;setYield()}
+function labels(){var u=$('unit').value,s=$('shape').value,t=L[u][s];for(var i=0;i<3;i++){var w=$('l'+i);if(i<t.length){w.style.display='';w.firstElementChild.textContent=t[i]}else w.style.display='none'}
+var im=u==='imperial';$('yl').textContent=im?'Yield per bag (cu ft)':'Yield per bag (m\u00b3)';$('rl').textContent=im?'Ready-mix $ per cu yd (optional)':'Ready-mix $ per m\u00b3 (optional)';$('rOL').textContent=im?'Ready-mix to order (cu yd)':'Ready-mix to order (m\u00b3)'}
+function n(i){var v=$(i).value.trim();return v===''?NaN:Number(v)}
+function o(i){var v=$(i).value.trim();return v===''?undefined:Number(v)}
+function f(x,p){return ConcreteCalc.round(x,p).toLocaleString(undefined,{maximumFractionDigits:p})}
+function m(x){return x===null?'-':x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function clr(msg){$('err').textContent=msg||'';['rVol','rWaste','rOrder','rBags','rBC','rRC'].forEach(function(i){$(i).textContent='-'})}
+function up(){var u=$('unit').value,s=$('shape').value,c=L[u][s].length,d=[],any=false;
+for(var i=0;i<c;i++){d.push(n('d'+i));if($('d'+i).value.trim()!=='')any=true}
+if(!any){clr('');return}
+var r=ConcreteCalc.compute({unit:u,shape:s,dims:d,quantity:n('qty'),wastePct:n('waste'),bagYield:n('yield'),bagPrice:o('bp'),readyMixPrice:o('rp')});
+if(!r.valid){clr(r.error);return}
+var im=u==='imperial',p=im?2:3;$('err').textContent='';
+$('rVol').textContent=f(r.volume,p)+(im?' cu ft':' m\u00b3');$('rWaste').textContent=f(r.volumeWithWaste,p)+(im?' cu ft':' m\u00b3');
+$('rOrder').textContent=f(r.orderUnitsWithWaste,p)+(im?' cu yd':' m\u00b3');$('rBags').textContent=r.bags.toLocaleString();
+$('rBC').textContent=m(r.bagCost);$('rRC').textContent=m(r.readyMixCost)}
+bags();labels();
+$('unit').addEventListener('change',function(){['d0','d1','d2','bp','rp'].forEach(function(i){$(i).value=''});bags();labels();up()});
+$('shape').addEventListener('change',function(){labels();up()});
+$('bag').addEventListener('change',function(){setYield();up()});
+['d0','d1','d2','qty','waste','yield','bp','rp'].forEach(function(i){$(i).addEventListener('input',up)});
+})();
+</script>
+</body>
+</html>
